@@ -39,7 +39,7 @@ public class DataBase {
 
     //上限数を超えていたらfalse
     public boolean count(String name) {
-        if (count < counter(name)) {
+        if (count <= counter(name)) {
             return false;
         }
         return true;
@@ -50,6 +50,7 @@ public class DataBase {
         return location.getWorld().getName()+location.getBlockX()+location.getBlockY()+location.getBlockZ();
     }
 
+    //何個そのプレイヤー名が登録されているか
     public int counter(String name) {
         int c = 0;
         for (String value : map.values()){
