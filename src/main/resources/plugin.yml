@@ -4,3 +4,6 @@ main: ubiquitaku.framelock.FrameLock
 api-version: 1.17
 commands:
   flock:
+permissions:
+  flock.op:
+    default: op

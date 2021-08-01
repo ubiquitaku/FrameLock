@@ -9,8 +9,10 @@ import java.util.Map;
 public class DataBase {
     //<StringLocation,name>
     Map<String,String> map = new HashMap<>();
-    public DataBase() {
+    int count;
+    public DataBase(int max) {
         //table作るとか色々
+        this.count = max;
     }
 
     //登録
@@ -35,9 +37,27 @@ public class DataBase {
         return false;
     }
 
+    //上限数を超えていたらfalse
+    public boolean count(String name) {
+        if (count < counter(name)) {
+            return false;
+        }
+        return true;
+    }
+
     //locationをStringに変換
     public String makeString(Location location) {
         return location.getWorld().getName()+location.getBlockX()+location.getBlockY()+location.getBlockZ();
+    }
+
+    public int counter(String name) {
+        int c = 0;
+        for (String value : map.values()){
+            if (value.equals(name)) {
+                c++;
+            }
+        }
+        return c;
     }
 }
 

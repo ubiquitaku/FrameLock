@@ -3,6 +3,8 @@ package ubiquitaku.framelock;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +13,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 
 public final class FrameLock extends JavaPlugin implements Listener {
@@ -23,9 +26,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
     public void onEnable() {
         // Plugin startup logic
         saveDefaultConfig();
-        config = getConfig();
-        db = new DataBase();
-        max = config.getInt("max");
+        load();
         Bukkit.getPluginManager().registerEvents(this,this);
     }
 
@@ -34,10 +35,45 @@ public final class FrameLock extends JavaPlugin implements Listener {
         // Plugin shutdown logic
     }
 
-    //額縁が置かれたらロックする
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (command.getName().equals("flock")) {
+            if (!sender.hasPermission("flock.op")) {
+                sender.sendMessage("§c§lあなたはこのコマンドを実行する権限を持っていません");
+                return true;
+            }
+            if (args.length == 0) {
+                sender.sendMessage(prefix+"---------------------------------------");
+                sender.sendMessage("/flock reload : config.ymlをリロードします");
+                sender.sendMessage("/flock set <数字 > : 額縁の最大数を設定します");
+                sender.sendMessage(prefix+"---------------------------------------");
+                return true;
+            }
+            if (args[0].equals("reload")) {
+                reloadConfig();
+                load();
+                sender.sendMessage(prefix+"リロード完了");
+                return true;
+            }
+            if (args[0].equals("set")) {
+                if (args.length != 2) {
+                    sender.sendMessage(prefix+"/flock set <数字 > : 額縁の最大数を設定します");
+                    return true;
+                }
+                config.set("max",args[1]);
+            }
+        }
+        return true;
+    }
+
     @EventHandler
     public void onPlace(BlockPlaceEvent e) {
+        //額縁が置かれたらロックする&上限数超えてたらキャンセル
         if (blockCheck(e.getBlock())) {
+            return;
+        }
+        if (!db.count(e.getPlayer().getName())) {
+            e.getPlayer().sendMessage(prefix+"あなたはこれ以上額縁を設置することができません");
             return;
         }
         db.add(e.getBlock().getLocation(),e.getPlayer().getName());
@@ -75,6 +111,12 @@ public final class FrameLock extends JavaPlugin implements Listener {
                 e.getPlayer().sendMessage(prefix+"なにしとんねん");
             }
         }
+    }
+
+    public void load() {
+        config = getConfig();
+        max = config.getInt("max");
+        db = new DataBase(max);
     }
 
     //額縁系アイテムならtrue
