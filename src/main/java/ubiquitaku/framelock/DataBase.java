@@ -1,17 +1,17 @@
 package ubiquitaku.framelock;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 public class DataBase {
     //<StringLocation,name>
-    Map<String,String> map = new HashMap<>();
+    Map<String, UUID> map = new HashMap<>();
     MySQLManager mysql;
     int count;
 
@@ -21,11 +21,12 @@ public class DataBase {
         mysql = new MySQLManager(plugin,plugin.getName());
         mysql.query("loc");
         mysql.query("name");
+        mysql.close();
     }
 
     //登録
-    public void add(Location location, String name) {
-        map.put(makeString(location),name);
+    public void add(Location location, UUID uuid) {
+        map.put(makeString(location),uuid);
     }
 
     //削除
@@ -41,34 +42,45 @@ public class DataBase {
         for (String s : map.keySet()) {
             key = key+s+"/";
         }
-        for (String s : map.values()) {
+        for (UUID s : map.values()) {
             value = value+s+"/";
         }
-        mysql.execute("insert into FlameLock (loc,name) values ("+key+","+value+");");
+        mysql.execute("insert into framelockdata (loc,uuid) values ("+key+","+value+");");
+        mysql.close();
     }
 
     //deから読み出し
     public void dbLoad() {
-        mysql.reConnect();
-        List<String> key = new ArrayList<>();
-        List<String> value = new ArrayList<>();
-        for (String s : )
+        try {
+            ResultSet set = mysql.query("select loc,uuid from framelockdata");
+            map = new HashMap<>();
+            while (set.next()) {
+                String key = set.getString("loc");
+                UUID uuid = UUID.fromString(set.getString("uuid"));
+                // uuidやkeyはカラム名です(੭ु´･ω･`)੭ु⁾⁾
+                map.put(key, uuid);
+            }
+            set.close();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("keyの取得に失敗しました");
+        }
+        mysql.close();
     }
 
     //額縁をいじることができる人か
     public boolean check(Location location, Player player) {
-        if (!map.containsValue(location)) {
+        if (!map.containsKey(makeString(location))) {
             return true;
         }
-        if (map.get(makeString(location)).equals(player.getName()) || player.isOp()) {
+        if (map.get(makeString(location)).equals(player.getUniqueId()) || player.isOp()) {
             return true;
         }
         return false;
     }
 
     //上限数を超えていたらfalse
-    public boolean count(String name) {
-        if (count <= counter(name)) {
+    public boolean count(UUID uuid) {
+        if (count <= counter(uuid)) {
             return false;
         }
         return true;
@@ -79,11 +91,11 @@ public class DataBase {
         return location.getWorld().getName()+location.getBlockX()+location.getBlockY()+location.getBlockZ();
     }
 
-    //何個そのプレイヤー名が登録されているか
-    public int counter(String name) {
+    //何個そのプレイヤーが登録されているか
+    public int counter(UUID uuid) {
         int c = 0;
-        for (String value : map.values()){
-            if (value.equals(name)) {
+        for (UUID value : map.values()){
+            if (value.equals(uuid)) {
                 c++;
             }
         }

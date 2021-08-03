@@ -33,6 +33,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        db.dbSave();
     }
 
     @Override
@@ -76,11 +77,11 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (blockCheck(e.getBlock())) {
             return;
         }
-        if (!db.count(e.getPlayer().getName())) {
+        if (!db.count(e.getPlayer().getUniqueId())) {
             e.getPlayer().sendMessage(prefix+"あなたはこれ以上額縁を設置することができません");
             return;
         }
-        db.add(e.getBlock().getLocation(),e.getPlayer().getName());
+        db.add(e.getBlock().getLocation(),e.getPlayer().getUniqueId());
         e.getPlayer().sendMessage(prefix+"額縁をロックしました");
     }
 
@@ -122,6 +123,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max);
+        db.dbLoad();
     }
 
     //額縁系アイテムならtrue
