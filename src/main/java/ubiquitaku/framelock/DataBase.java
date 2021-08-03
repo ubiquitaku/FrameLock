@@ -2,17 +2,25 @@ package ubiquitaku.framelock;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DataBase {
     //<StringLocation,name>
     Map<String,String> map = new HashMap<>();
+    MySQLManager mysql;
     int count;
-    public DataBase(int max) {
+
+    public DataBase(JavaPlugin plugin,int max) {
         //table作るとか色々
         this.count = max;
+        mysql = new MySQLManager(plugin,plugin.getName());
+        mysql.query("loc");
+        mysql.query("name");
     }
 
     //登録
@@ -23,7 +31,28 @@ public class DataBase {
     //削除
     public void remove(Location location) {
         map.remove(makeString(location));
-        //dbからも削除
+    }
+
+    //dbに保存
+    public void dbSave() {
+        mysql.reConnect();
+        String key = null;
+        String value = null;
+        for (String s : map.keySet()) {
+            key = key+s+"/";
+        }
+        for (String s : map.values()) {
+            value = value+s+"/";
+        }
+        mysql.execute("insert into FlameLock (loc,name) values ("+key+","+value+");");
+    }
+
+    //deから読み出し
+    public void dbLoad() {
+        mysql.reConnect();
+        List<String> key = new ArrayList<>();
+        List<String> value = new ArrayList<>();
+        for (String s : )
     }
 
     //額縁をいじることができる人か

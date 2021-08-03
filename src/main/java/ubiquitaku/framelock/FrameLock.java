@@ -61,6 +61,10 @@ public final class FrameLock extends JavaPlugin implements Listener {
                     return true;
                 }
                 config.set("max",args[1]);
+                saveConfig();
+                max = 5;
+                db.count = Integer.parseInt(args[1]);
+                sender.sendMessage(prefix+"最大設置数を"+args[1]+"に設定しました");
             }
         }
         return true;
@@ -113,10 +117,11 @@ public final class FrameLock extends JavaPlugin implements Listener {
         }
     }
 
+    //設定ファイル再読み込み
     public void load() {
         config = getConfig();
         max = config.getInt("max");
-        db = new DataBase(max);
+        db = new DataBase(this,max);
     }
 
     //額縁系アイテムならtrue
