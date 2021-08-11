@@ -112,6 +112,11 @@ public final class FrameLock extends JavaPlugin implements Listener {
             e.setCancelled(true);
             return;
         }
+        if (db.containsBlock(blockVector(e.getEntity().getLocation()))) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(prefix+"既に保護された額縁が設置されているブロックには額縁を設置できません");
+            return;
+        }
         db.add(e.getEntity().getLocation(),e.getPlayer().getUniqueId());
         db.addBlock(blockVector(e.getEntity().getLocation()),e.getPlayer().getUniqueId());
         e.getPlayer().sendMessage(prefix+"額縁をロックしました");
@@ -188,9 +193,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (!db.isBreakBlock(e.getBlock().getLocation())) {
             e.setCancelled(true);
             e.getPlayer().sendMessage(prefix+"あなたは額縁により一緒に保護されているブロックのため破壊できません");
-            return;
         }
-
     }
 
 //    @EventHandler

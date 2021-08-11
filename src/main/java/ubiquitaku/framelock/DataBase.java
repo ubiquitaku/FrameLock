@@ -155,5 +155,13 @@ public class DataBase {
         }
         return false;
     }
+
+    //保護してたらtrue
+    public boolean containsBlock(Location location) {
+        if (blockMap.containsKey(makeBlockString(location))) {
+            return true;
+        }
+        return false;
+    }
 }
 
