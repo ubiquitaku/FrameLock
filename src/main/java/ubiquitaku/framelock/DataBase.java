@@ -23,6 +23,7 @@ public class DataBase {
         tableName = "framelockdata";
         this.count = max;
         mysql = new MySQLManager(plugin,plugin.getName());
+        dbLoad();
 //        mysql.execute("use " + plugin.getConfig().getString("mysql.db"));
 //        mysql.close();
     }
@@ -43,7 +44,7 @@ public class DataBase {
         mysql.execute("delete from db.framelockdata");
         for (String key : map.keySet()) {
             UUID value = map.get(key);
-            mysql.execute("insert into "+tableName+" (loc,uuid) values ("+key+","+value+");");
+            mysql.execute("insert into db.framerockdata (loc,uuid) values ("+key+","+value+");");
         }
         //blockの方も追加しないと…
 //        mysql.close();
