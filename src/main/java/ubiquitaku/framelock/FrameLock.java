@@ -40,7 +40,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        db.dbSave();
+        db.saveMap();
     }
 
     @Override
@@ -62,7 +62,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
                 return true;
             }
             if (args[0].equals("reload")) {
-                db.dbSave();
+                db.saveMap();
                 reloadConfig();
                 load();
                 sender.sendMessage(prefix+"リロード完了");
@@ -122,33 +122,6 @@ public final class FrameLock extends JavaPlugin implements Listener {
         e.getPlayer().sendMessage(prefix+"額縁をロックしました");
     }
 
-//    @EventHandler
-//    public void breakFrame(EntityDeathEvent e) {
-//        //額縁を破壊するのが可能なプレイヤーか
-//        Bukkit.broadcast(Component.text(e.getEventName()));
-//        if (!entityCheck(e.getEntityType())) {
-//            Bukkit.getLogger().info("debug2");
-//            return;
-//        }
-//        try {
-//            if (!Bukkit.getOnlinePlayers().contains(e.getEntity().getKiller().getPlayer())) {
-//                e.setCancelled(true);
-//            }
-//        } catch (NullPointerException exception) {
-//            e.setCancelled(true);
-//            return;
-//        }
-//        if (!db.check(e.getEntity().getLocation(),e.getEntity().getKiller())) {
-//            //だめなひとならキャンセル
-//            e.setCancelled(true);
-//            e.getEntity().getKiller().sendMessage(prefix+"あなたは破壊する権限を持っていません");
-//            return;
-//        }
-//        //いいひとならキャンセルせずdbから情報を削除
-//        db.remove(e.getEntity().getLocation());
-//        e.getEntity().getKiller().sendMessage(prefix+"額縁が破壊されたため保護の情報を削除しました");
-//    }
-
     //クリック対策&弓矢対策
     @EventHandler
     public void breakFrame(EntityDamageByEntityEvent e) {
@@ -196,171 +169,13 @@ public final class FrameLock extends JavaPlugin implements Listener {
         }
     }
 
-//    @EventHandler
-//    public void detonation(ItemSpawnEvent e) {
-//        Bukkit.broadcast(Component.text(e.getEventName()));
-//        if ()
-//        Bukkit.broadcast(Component.text(e.getEntityType().name()));
-//        if (entityCheck(e.getEntityType())) {
-//            e.setCancelled(true);
-//        }
-//
-//    }
-
-//    @EventHandler
-//    public void remove(ItemSpawnEvent e) {
-//        Bukkit.broadcast(Component.text("we"));
-//        if (!entityCheck(e.getEntityType())) {
-//            return;
-//        }
-//        e.setCancelled(true);
-//    }
-
-//    @EventHandler
-//    public void drop(EntityDropItemEvent e) {
-//        Bukkit.broadcast(Component.text("we"));
-//        if (!entityCheck(e.getEntityType())) {
-//            return;
-//        }
-//        e.setCancelled(true);
-//
-//    }
-
-//    @EventHandler
-//    public void combust(EntityCombustEvent e) {
-//        if (!entityCheck(e.getEntityType())) {
-//            return;
-//        }
-//        e.setCancelled(true);
-//        Bukkit.broadcast(Component.text("燃焼を無効化"));
-//    }
-
-//    @EventHandler
-//    public void detonation(EntityDamageEvent e) {
-//        if (!entityCheck(e.getEntityType())) {
-//            return;
-//        }
-//    }
-
-//    @EventHandler
-//    public void detonation(EntityDamageEvent e) {
-//        if (!entityCheck(e.getEntityType())) {
-//            return;
-//        }
-//    }
-
-//    @EventHandler
-//    public void remove(EntityRemoveFromWorldEvent e) {
-//        //額縁か
-//        if (entityCheck(e.getEntityType())) {
-//            Bukkit.broadcast(Component.text("aaa"));
-//            if (!db.containsDB(e.getEntity().getLocation())) {
-//
-//            }
-//        }
-//    }
-
-    //プレイヤー以外のエンティティが額縁を破壊するのをキャンセル
-//    @EventHandler
-//    public void noBust(EntityChangeBlockEvent e) {
-//        Bukkit.broadcast(Component.text(e.getEventName()));
-//        if (blockCheck(e.getBlock())) {
-//            e.setCancelled(true);
-//        }
-//    }
-
-    //額縁にエンティティが与えるダメージを防ぐ
-//    @EventHandler
-//    public void entityDamage(EntityDamageByEntityEvent e) {
-//        Bukkit.broadcast(Component.text(e.getEventName()));
-//        Bukkit.broadcast(Component.text(e.getEntity().getType().name()));
-//        Bukkit.broadcast(Component.text(e.getDamager().getName()));
-//        if (!entityCheck(e.getEntityType())) {
-//            return;
-//        }
-//        if (!db.checkEntity(e.getEntity().getLocation(),e.getEntity())) {
-//            e.setCancelled(true);
-//        }
-//
-////        if (!entityCheck(e.getEntityType())) {
-////            return;
-////        }
-////        if (!db.checkEntity(e.getEntity().getLocation(),e.getEntity())) {
-////            e.getDamager().sendMessage(prefix+"あなたはこの額縁を破壊できません");
-////            e.setCancelled(true);
-////        }
-//    }
-
-
-//    @EventHandler
-//    public void onPlace(BlockPlaceEvent e) {
-//        //額縁が置かれたらロックする&上限数超えてたらキャンセル
-//        Bukkit.getLogger().info("debug0");
-//        if (!blockCheck(e.getBlock())) {
-//            Bukkit.getLogger().info("debug1");
-//            return;
-//        }
-//        if (!db.count(e.getPlayer().getUniqueId())) {
-//            e.getPlayer().sendMessage(prefix+"あなたはこれ以上額縁を設置することができません");
-//            e.setCancelled(true);
-//            return;
-//        }
-//        db.add(e.getBlock().getLocation(),e.getPlayer().getUniqueId());
-//        e.getPlayer().sendMessage(prefix+"額縁をロックしました");
-//    }
-
-    //額縁の裏のブロックの破壊
-//    @EventHandler
-//    public void onFlameBreak(BlockBreakEvent e) {
-//        //額縁の裏のブロックを破壊することが可能かチェック
-//        if (!blockCheck(e.getBlock())) {
-//            Bukkit.getLogger().info("debug20");
-//            return;
-//        }
-//        if (!db.check(e.getBlock().getLocation(),e.getPlayer())) {
-//            //だめなひとならキャンセル
-//            e.setCancelled(true);
-//            e.getPlayer().sendMessage(prefix+"あなたは破壊する権限を持っていません");
-//            return;
-//        }
-//        //いいひとならキャンセルせずdbから情報を削除
-//        db.remove(e.getBlock().getLocation());
-//        e.getPlayer().sendMessage(prefix+"額縁が破壊されたため保護の情報を削除しました");
-//    }
-
-    //額縁のクリック
-//    @EventHandler
-//    public void inItem(PlayerInteractEvent e) {
-//        //プレイヤーがブロックを右クリックまたは左クリックしたとき
-////        if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_AIR) {
-//            //ブロックが額縁か
-//            if (!blockCheck(e.getClickedBlock())) {
-//                return;
-//            }
-//            //ブロックの操作が可能な人か
-//            if (db.check(e.getClickedBlock().getLocation(),e.getPlayer())) {
-//                //だめならキャンセル
-//                e.setCancelled(true);
-//                e.getPlayer().sendMessage(prefix+"なにしとんねん");
-//            }
-////        }
-//    }
-
     //設定ファイル再読み込み
     public void load() {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max);
-        db.dbLoad();
+        db.loadMap();
     }
-
-    //額縁系アイテムならtrue
-//    public boolean blockCheck(Block block) {
-//        if (block.getType() == Material.ITEM_FRAME || block.getType() == Material.GLOW_ITEM_FRAME) {
-//            return true;
-//        }
-//        return false;
-//    }
 
     //額縁系エンティティならtrue
     public boolean entityCheck(EntityType type) {

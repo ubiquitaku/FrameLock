@@ -17,15 +17,46 @@ public class DataBase {
     MySQLManager mysql;
     int count;
     String tableName;
+    JavaPlugin pl;
 
     public DataBase(JavaPlugin plugin,int max) {
         //table作るとか色々
+        pl = plugin;
         tableName = "framelockdata";
         this.count = max;
         mysql = new MySQLManager(plugin,plugin.getName());
-        dbLoad();
+        createTable();
 //        mysql.execute("use " + plugin.getConfig().getString("mysql.db"));
 //        mysql.close();
+    }
+
+    public void createTable() {
+        mysql.execute("create table if not exists framelockdata("+
+                "id int unsigned auto_increment primary key,"+
+                "loc varchar,"+
+                "uuid varchar(36),"+
+                "save_date datetime default current_timestamp"+
+                ") engine=InnoDB default charset=utf8;");
+    }
+
+    //dbに保存
+    public void saveMap() {
+        Bukkit.getScheduler().runTask(pl, () -> {
+            mysql.reConnect();
+            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
+        });
+    }
+
+    //dbから読み出し
+    public void loadMap() {
+        map = new HashMap<>();
+        try {
+            ResultSet set = mysql.query("select * from framelockdata");
+            while (set.next()) map.put(set.getString("loc"), UUID.fromString(set.getString("uuid")));
+            set.close();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("frameの取得に失敗しました");
+        }
     }
 
     //登録
