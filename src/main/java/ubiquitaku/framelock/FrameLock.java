@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public final class FrameLock extends JavaPlugin implements Listener {
@@ -40,7 +41,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        db.saveMap();
+        db.cancelAutoSave();
     }
 
     @Override
@@ -48,15 +49,19 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (command.getName().equals("flock")) {
             if (args.length == 0) {
                 sender.sendMessage(prefix+"======================================");
-                sender.sendMessage("/flock ");
+                sender.sendMessage("/flock refresh : 何らかの原因により保護を貫通して破壊された額縁がある場合その保護を削除します");
                 if (sender.isOp()) {
                     sender.sendMessage("OP---------------------------------------");
                     sender.sendMessage("/flock reload : config.ymlをリロードします");
                     sender.sendMessage("/flock set <数字 > : 額縁の最大数を設定します");
+                    sender.sendMessage("flock save : おーとせーぶを無視して保存します");
                     sender.sendMessage("OP---------------------------------------");
                 }
                 sender.sendMessage(prefix+"======================================");
                 return true;
+            }
+            if (args[0].equals("refresh")) {
+                db.refresh();
             }
             if (!sender.hasPermission("flock.op")) {
                 return true;
@@ -75,7 +80,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
                 }
                 config.set("max",args[1]);
                 saveConfig();
-                max = 5;
+                max = Integer.parseInt(args[1]);
                 db.count = Integer.parseInt(args[1]);
                 sender.sendMessage(prefix+"最大設置数を"+args[1]+"に設定しました");
             }
@@ -108,6 +113,10 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return;
         }
         if (!db.count(e.getPlayer().getUniqueId())) {
+            if (e.getPlayer().isOp()) {
+                e.getPlayer().sendMessage(prefix+"権限使って上限を超えて設置しています");
+                return;
+            }
             e.getPlayer().sendMessage(prefix+"あなたはこれ以上額縁を設置することができません");
             e.setCancelled(true);
             return;

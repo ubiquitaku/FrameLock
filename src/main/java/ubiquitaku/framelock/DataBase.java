@@ -5,6 +5,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,11 +15,13 @@ import java.util.*;
 public class DataBase {
     //<StringLocation,name>
     Map<String, UUID> map = new HashMap<>();
-    Map<String, UUID> blockMap = new HashMap<>();
+    List<String> blockMap = new ArrayList<>();
     MySQLManager mysql;
     int count;
     String tableName;
     JavaPlugin pl;
+    int period = 10; // n秒ごとに保存します
+    BukkitTask task;
 
     public DataBase(JavaPlugin plugin,int max) {
         //table作るとか色々
@@ -26,36 +30,61 @@ public class DataBase {
         this.count = max;
         mysql = new MySQLManager(plugin,plugin.getName());
         createTable();
+        runAutoSave();
 //        mysql.execute("use " + plugin.getConfig().getString("mysql.db"));
 //        mysql.close();
     }
 
     public void createTable() {
-        mysql.execute("create table if not exists framelockdata("+
-                "id int unsigned auto_increment primary key,"+
-                "loc varchar,"+
-                "uuid varchar(36),"+
-                "save_date datetime default current_timestamp"+
+        mysql.execute("create table if not exists `framelockdata` ("+
+                "loc varchar, " +
+                "uuid varchar" +
                 ") engine=InnoDB default charset=utf8;");
+    }
+
+    // 定期的に保存します
+    public void runAutoSave() {
+        task = Bukkit.getScheduler().runTaskTimer(pl, () -> {
+            mysql.reConnect();
+            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
+        }, period * 20L, period * 20L);
+    }
+    // キャンセルします
+    public void cancelAutoSave() {
+        if (task == null || task.isCancelled()) return;
+        task.cancel();
     }
 
     //dbに保存
     public void saveMap() {
-        Bukkit.getScheduler().runTask(pl, () -> {
-            mysql.reConnect();
-            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
-        });
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                mysql.reConnect();
+                map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
+            }
+        }.runTask(pl);
     }
+//    public void saveMap() {
+//        Bukkit.getScheduler().runTask(pl, () -> {
+//            mysql.reConnect();
+//            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
+//        });
+//    }
 
     //dbから読み出し
     public void loadMap() {
         map = new HashMap<>();
+        blockMap = new ArrayList<>();
         try {
             ResultSet set = mysql.query("select * from framelockdata");
             while (set.next()) map.put(set.getString("loc"), UUID.fromString(set.getString("uuid")));
             set.close();
         } catch (SQLException e) {
             Bukkit.getLogger().warning("frameの取得に失敗しました");
+        }
+        for (String string : map.keySet()) {
+            blockMap.add(string);
         }
     }
 
@@ -113,9 +142,9 @@ public class DataBase {
 
     //上のエンティティバージョン
     public boolean checkEntity(Location location, Entity entity) {
-        for (String key : map.keySet()) {
+//        for (String key : map.keySet()) {
 //            Bukkit.broadcast(Component.text(key+" "+map.get(key)));
-        }
+//        }
         if (!map.containsKey(makeString(location))) {
 //            Bukkit.broadcast(Component.text(String.valueOf(map.get(makeString(location)))));
 //            Bukkit.broadcast(Component.text("あ"));
@@ -138,6 +167,12 @@ public class DataBase {
     //locationをStringに変換
     public String makeString(Location location) {
         return location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ()+"/"+location.getYaw()+"/"+location.getPitch();
+    }
+
+    //Stringからlocation
+    public Location makeLocation(String locationString) {
+        String[] str = locationString.split("/");
+        return new Location(Bukkit.getWorld(str[0]),Integer.parseInt(str[1]),Integer.parseInt(str[2]),Integer.parseInt(str[3]),Integer.parseInt(str[4]),Integer.parseInt(str[5]));
     }
 
     //何個そのプレイヤーが登録されているか
@@ -167,7 +202,7 @@ public class DataBase {
 
     //blockの座標を登録します
     public void addBlock(Location location,UUID uuid) {
-        blockMap.put(makeBlockString(location),uuid);
+        blockMap.add(makeBlockString(location));
     }
 
     //blockの座標を削除します
@@ -182,7 +217,7 @@ public class DataBase {
 
     //ブロック破壊できるならtrue,できないならfalse
     public boolean isBreakBlock(Location location) {
-        if (!blockMap.containsKey(makeBlockString(location))) {
+        if (!blockMap.contains(makeBlockString(location))) {
             return true;
         }
         return false;
@@ -190,10 +225,17 @@ public class DataBase {
 
     //保護してたらtrue
     public boolean containsBlock(Location location) {
-        if (blockMap.containsKey(makeBlockString(location))) {
+        if (blockMap.contains(makeBlockString(location))) {
             return true;
         }
         return false;
+    }
+
+    //保護だけの場所の保護を消します
+    public void refresh() {
+        for (String loc : map.keySet()) {
+            //どうすんだろこれ…
+        }
     }
 }
 
