@@ -98,6 +98,9 @@ public final class FrameLock extends JavaPlugin implements Listener {
                 Player p = (Player) sender;
                 Bukkit.broadcast(Component.text(p.getLocation().getPitch()));
             }
+            if (args[0].equals("list")) {
+                db.list();
+            }
         }
         return true;
     }
@@ -183,7 +186,8 @@ public final class FrameLock extends JavaPlugin implements Listener {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max);
-        db.loadMap();
+        Bukkit.getLogger().info("we");
+//        db.loadMap();
     }
 
     //額縁系エンティティならtrue

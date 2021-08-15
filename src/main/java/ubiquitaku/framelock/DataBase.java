@@ -1,5 +1,6 @@
 package ubiquitaku.framelock;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -14,8 +15,8 @@ import java.util.*;
 
 public class DataBase {
     //<StringLocation,name>
-    Map<String, UUID> map = new HashMap<>();
-    List<String> blockMap = new ArrayList<>();
+    Map<String, UUID> map;
+    List<String> blockMap;
     MySQLManager mysql;
     int count;
     String tableName;
@@ -30,6 +31,7 @@ public class DataBase {
         this.count = max;
         mysql = new MySQLManager(plugin,plugin.getName());
         createTable();
+        loadMap();
         runAutoSave();
 //        mysql.execute("use " + plugin.getConfig().getString("mysql.db"));
 //        mysql.close();
@@ -64,14 +66,10 @@ public class DataBase {
             }
         }.runTask(pl);
     }
-//    public void saveMap() {
-//        Bukkit.getScheduler().runTask(pl, () -> {
-//            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
-//        });
-//    }
 
     //dbから読み出し
     public void loadMap() {
+        Bukkit.broadcast(Component.text("aa"));
         map = new HashMap<>();
         blockMap = new ArrayList<>();
         try {
@@ -81,12 +79,12 @@ public class DataBase {
         } catch (SQLException e) {
             Bukkit.getLogger().warning("frameの取得に失敗しました");
         }
-        if (map.keySet().size() != 0) {
-            for (String string : map.keySet()) {
-                blockMap.add(makeString(blockVector(makeLocation(string))));
-            }
+        Bukkit.broadcast(Component.text("looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooad"));
+        for(Map.Entry<String, UUID> entry : map.entrySet()) {
+            String tmp = makeString(blockVector(makeLocation(entry.getKey())));
+            Bukkit.broadcast(Component.text(entry.getKey()+":"+entry.getValue()));
+            blockMap.add(tmp);
         }
-
     }
 
     //登録
@@ -263,6 +261,12 @@ public class DataBase {
             }
         }
         return new Location(location.getWorld(),x,y,z,location.getYaw(),location.getPitch());
+    }
+
+    public void list() {
+        for (String string : blockMap) {
+            Bukkit.broadcast(Component.text(string));
+        }
     }
 }
 
