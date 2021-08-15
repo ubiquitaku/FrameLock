@@ -36,17 +36,17 @@ public class DataBase {
     }
 
     public void createTable() {
-        mysql.execute("create table if not exists `framelockdata` ("+
-                "loc varchar, " +
-                "uuid varchar" +
+        mysql.execute("create table if not exists framelockdata ("+
+                "loc varchar(60), " +
+                "uuid varchar(60)" +
                 ") engine=InnoDB default charset=utf8;");
     }
 
     // 定期的に保存します
     public void runAutoSave() {
         task = Bukkit.getScheduler().runTaskTimer(pl, () -> {
-            mysql.reConnect();
-            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
+            mysql.execute("delete from db.framelockdata;");
+            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ('"+loc+"','"+uuid+"');")));
         }, period * 20L, period * 20L);
     }
     // キャンセルします
@@ -60,14 +60,12 @@ public class DataBase {
         new BukkitRunnable() {
             @Override
             public void run() {
-                mysql.reConnect();
-                map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
+                map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ('"+loc+"','"+uuid+"');")));
             }
         }.runTask(pl);
     }
 //    public void saveMap() {
 //        Bukkit.getScheduler().runTask(pl, () -> {
-//            mysql.reConnect();
 //            map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ("+loc+","+uuid+");")));
 //        });
 //    }
@@ -77,15 +75,18 @@ public class DataBase {
         map = new HashMap<>();
         blockMap = new ArrayList<>();
         try {
-            ResultSet set = mysql.query("select * from framelockdata");
+            ResultSet set = mysql.query("select * from framelockdata;");
             while (set.next()) map.put(set.getString("loc"), UUID.fromString(set.getString("uuid")));
             set.close();
         } catch (SQLException e) {
             Bukkit.getLogger().warning("frameの取得に失敗しました");
         }
-        for (String string : map.keySet()) {
-            blockMap.add(string);
+        if (map.keySet().size() != 0) {
+            for (String string : map.keySet()) {
+                blockMap.add(makeString(blockVector(makeLocation(string))));
+            }
         }
+
     }
 
     //登録
@@ -100,8 +101,7 @@ public class DataBase {
 
     //dbに保存
     public void dbSave() {
-        mysql.reConnect();
-        mysql.execute("delete from db.framelockdata");
+        mysql.execute("delete from db.framelockdata;");
         for (String key : map.keySet()) {
             UUID value = map.get(key);
             mysql.execute("insert into db.framerockdata (loc,uuid) values ("+key+","+value+");");
@@ -236,6 +236,33 @@ public class DataBase {
         for (String loc : map.keySet()) {
             //どうすんだろこれ…
         }
+    }
+
+    //額縁のlocationを送ることでその背後に存在しているブロックのlocationを返す
+    public Location blockVector(Location location) {
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        if (location.getPitch() == -90) {
+            y = y-1;
+        } else if (location.getPitch() == 90) {
+            y = y+1;
+        } else {
+            switch ((int) location.getYaw()) {
+                case -90:
+                    x = x-1;
+                    break;
+                case 0:
+                    z = z-1;
+                    break;
+                case 90:
+                    x = x+1;
+                    break;
+                default:
+                    z = z+1;
+            }
+        }
+        return new Location(location.getWorld(),x,y,z,location.getYaw(),location.getPitch());
     }
 }
 

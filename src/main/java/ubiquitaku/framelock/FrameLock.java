@@ -121,13 +121,13 @@ public final class FrameLock extends JavaPlugin implements Listener {
             e.setCancelled(true);
             return;
         }
-        if (db.containsBlock(blockVector(e.getEntity().getLocation()))) {
+        if (db.containsBlock(db.blockVector(e.getEntity().getLocation()))) {
             e.setCancelled(true);
             e.getPlayer().sendMessage(prefix+"既に保護された額縁が設置されているブロックには額縁を設置できません");
             return;
         }
         db.add(e.getEntity().getLocation(),e.getPlayer().getUniqueId());
-        db.addBlock(blockVector(e.getEntity().getLocation()),e.getPlayer().getUniqueId());
+        db.addBlock(db.blockVector(e.getEntity().getLocation()),e.getPlayer().getUniqueId());
         e.getPlayer().sendMessage(prefix+"額縁をロックしました");
     }
 
@@ -161,7 +161,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
     public void onBreak(HangingBreakByEntityEvent e) {
         if (db.checkEntity(e.getEntity().getLocation(),e.getRemover())) {
             db.remove(e.getEntity().getLocation());
-            db.removeBlock(blockVector(e.getEntity().getLocation()));
+            db.removeBlock(db.blockVector(e.getEntity().getLocation()));
             e.getRemover().sendMessage(prefix+"額縁が破壊されたため保護の情報を削除します");
             return;
         }
@@ -192,33 +192,6 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return true;
         }
         return false;
-    }
-
-    //額縁のlocationを送ることでその背後に存在しているブロックのlocationを返す
-    public Location blockVector(Location location) {
-        int x = location.getBlockX();
-        int y = location.getBlockY();
-        int z = location.getBlockZ();
-        if (location.getPitch() == -90) {
-            y = y-1;
-        } else if (location.getPitch() == 90) {
-            y = y+1;
-        } else {
-            switch ((int) location.getYaw()) {
-                case -90:
-                    x = x-1;
-                    break;
-                case 0:
-                    z = z-1;
-                    break;
-                case 90:
-                    x = x+1;
-                    break;
-                default:
-                    z = z+1;
-            }
-        }
-        return new Location(location.getWorld(),x,y,z,location.getYaw(),location.getPitch());
     }
 
     //破壊されたブロックのあらゆる方向に対して付着している額縁があった場合のlocationをStringlistにして返す
