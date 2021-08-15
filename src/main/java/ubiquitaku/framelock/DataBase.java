@@ -172,7 +172,7 @@ public class DataBase {
     //Stringからlocation
     public Location makeLocation(String locationString) {
         String[] str = locationString.split("/");
-        return new Location(Bukkit.getWorld(str[0]),Integer.parseInt(str[1]),Integer.parseInt(str[2]),Integer.parseInt(str[3]),Integer.parseInt(str[4]),Integer.parseInt(str[5]));
+        return new Location(Bukkit.getWorld(str[0]),Integer.parseInt(str[1]),Integer.parseInt(str[2]),Integer.parseInt(str[3]),(int)Float.parseFloat(str[4]),(int)Float.parseFloat(str[5]));
     }
 
     //何個そのプレイヤーが登録されているか
