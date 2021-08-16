@@ -79,9 +79,8 @@ public class DataBase {
         } catch (SQLException e) {
             Bukkit.getLogger().warning("frameの取得に失敗しました");
         }
-        Bukkit.broadcast(Component.text("looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooad"));
         for(Map.Entry<String, UUID> entry : map.entrySet()) {
-            String tmp = makeString(blockVector(makeLocation(entry.getKey())));
+            String tmp = makeBlockString(blockVector(makeLocation(entry.getKey())));
             Bukkit.broadcast(Component.text(entry.getKey()+":"+entry.getValue()));
             blockMap.add(tmp);
         }
@@ -199,7 +198,7 @@ public class DataBase {
     }
 
     //blockの座標を登録します
-    public void addBlock(Location location,UUID uuid) {
+    public void addBlock(Location location) {
         blockMap.add(makeBlockString(location));
     }
 
@@ -260,7 +259,7 @@ public class DataBase {
                     z = z+1;
             }
         }
-        return new Location(location.getWorld(),x,y,z,location.getYaw(),location.getPitch());
+        return new Location(location.getWorld(),x,y,z);
     }
 
     public void list() {

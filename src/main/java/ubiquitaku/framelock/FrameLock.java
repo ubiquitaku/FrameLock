@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 public final class FrameLock extends JavaPlugin implements Listener {
@@ -108,11 +107,8 @@ public final class FrameLock extends JavaPlugin implements Listener {
     @EventHandler
     public void placeFrame(HangingPlaceEvent e) {
         //額縁が置かれたらロックする&上限数超えてたらキャンセル
-        if (e.isCancelled()) {
-            return;
-        }
+
         if (!entityCheck(e.getEntity().getType())) {
-            Bukkit.getLogger().info("debug1");
             return;
         }
         if (!db.count(e.getPlayer().getUniqueId())) {
@@ -130,7 +126,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return;
         }
         db.add(e.getEntity().getLocation(),e.getPlayer().getUniqueId());
-        db.addBlock(db.blockVector(e.getEntity().getLocation()),e.getPlayer().getUniqueId());
+        db.addBlock(db.blockVector(e.getEntity().getLocation()));
         e.getPlayer().sendMessage(prefix+"額縁をロックしました");
     }
 
@@ -186,7 +182,6 @@ public final class FrameLock extends JavaPlugin implements Listener {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max);
-        Bukkit.getLogger().info("we");
 //        db.loadMap();
     }
 
@@ -196,17 +191,6 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return true;
         }
         return false;
-    }
-
-    //破壊されたブロックのあらゆる方向に対して付着している額縁があった場合のlocationをStringlistにして返す
-    public List<String> vectorBlockLocation(Location location) {
-        String world = location.getWorld().getName();
-        int x = location.getBlockX(),y = location.getBlockY(),z = location.getBlockZ();
-        int yaw = (int) location.getYaw();
-        int pitch = (int) location.getPitch();
-        List<String> li = new ArrayList<>();
-        li.add(makeStr(world,x,y,z,yaw,90));
-        return li;
     }
 
     public String makeStr(String world,int x,int y,int z,int yaw,int pitch) {
