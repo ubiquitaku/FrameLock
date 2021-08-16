@@ -1,8 +1,6 @@
 package ubiquitaku.framelock;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,10 +16,6 @@ import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 
 public final class FrameLock extends JavaPlugin implements Listener {
     String prefix = "§l[FlameLock]§r";
@@ -48,7 +42,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (command.getName().equals("flock")) {
             if (args.length == 0) {
                 sender.sendMessage(prefix+"======================================");
-                sender.sendMessage("/flock refresh : 何らかの原因により保護を貫通して破壊された額縁がある場合その保護を削除します");
+                sender.sendMessage("/flock refresh : 何らかの原因により保護を貫通して破壊された額縁がある場合その保護を削除します(作ろうと思ったけど無理でした)");
                 if (sender.isOp()) {
                     sender.sendMessage("OP---------------------------------------");
                     sender.sendMessage("/flock reload : config.ymlをリロードします");
@@ -91,14 +85,16 @@ public final class FrameLock extends JavaPlugin implements Listener {
             //debug
             if (args[0].equals("yaw")) {
                 Player p = (Player) sender;
-                Bukkit.broadcast(Component.text(p.getLocation().getYaw()));
+                sender.sendMessage(prefix+p.getLocation().getYaw());
             }
             if (args[0].equals("pi")) {
                 Player p = (Player) sender;
-                Bukkit.broadcast(Component.text(p.getLocation().getPitch()));
+                sender.sendMessage(prefix+p.getLocation().getPitch());
             }
+            //debug
             if (args[0].equals("list")) {
-                db.list();
+                sender.sendMessage(prefix+"現在使用できません");
+                db.list(sender);
             }
         }
         return true;
@@ -107,7 +103,6 @@ public final class FrameLock extends JavaPlugin implements Listener {
     @EventHandler
     public void placeFrame(HangingPlaceEvent e) {
         //額縁が置かれたらロックする&上限数超えてたらキャンセル
-
         if (!entityCheck(e.getEntity().getType())) {
             return;
         }
@@ -182,7 +177,6 @@ public final class FrameLock extends JavaPlugin implements Listener {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max);
-//        db.loadMap();
     }
 
     //額縁系エンティティならtrue
@@ -191,9 +185,5 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return true;
         }
         return false;
-    }
-
-    public String makeStr(String world,int x,int y,int z,int yaw,int pitch) {
-        return world+"/"+x+"/"+y+"/"+z+"/"+yaw+"/"+pitch;
     }
 }

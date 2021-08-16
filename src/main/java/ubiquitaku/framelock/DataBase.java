@@ -1,8 +1,8 @@
 package ubiquitaku.framelock;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,8 +33,6 @@ public class DataBase {
         createTable();
         loadMap();
         runAutoSave();
-//        mysql.execute("use " + plugin.getConfig().getString("mysql.db"));
-//        mysql.close();
     }
 
     public void createTable() {
@@ -69,7 +67,6 @@ public class DataBase {
 
     //dbから読み出し
     public void loadMap() {
-        Bukkit.broadcast(Component.text("aa"));
         map = new HashMap<>();
         blockMap = new ArrayList<>();
         try {
@@ -81,7 +78,6 @@ public class DataBase {
         }
         for(Map.Entry<String, UUID> entry : map.entrySet()) {
             String tmp = makeBlockString(blockVector(makeLocation(entry.getKey())));
-            Bukkit.broadcast(Component.text(entry.getKey()+":"+entry.getValue()));
             blockMap.add(tmp);
         }
     }
@@ -94,36 +90,6 @@ public class DataBase {
     //削除
     public void remove(Location location) {
         map.remove(makeString(location));
-    }
-
-    //dbに保存
-    public void dbSave() {
-        mysql.execute("delete from db.framelockdata;");
-        for (String key : map.keySet()) {
-            UUID value = map.get(key);
-            mysql.execute("insert into db.framerockdata (loc,uuid) values ("+key+","+value+");");
-        }
-        //blockの方も追加しないと…
-//        mysql.close();
-    }
-
-    //dbから読み出し
-    public void dbLoad() {
-        try {
-            ResultSet set = mysql.query("select * from "+tableName);
-            map = new HashMap<>();
-            while (set.next()) {
-                String key = set.getString("loc");
-                UUID uuid = UUID.fromString(set.getString("uuid"));
-                // uuidやkeyはカラム名です(੭ु´･ω･`)੭ु⁾⁾
-                map.put(key, uuid);
-            }
-            //blockの方も追加しないと…
-            set.close();
-        } catch (SQLException e) {
-            Bukkit.getLogger().warning("keyの取得に失敗しました");
-        }
-//        mysql.close();
     }
 
     //額縁をいじることができる人か
@@ -183,7 +149,7 @@ public class DataBase {
         return c;
     }
 
-    //mapに存在しているか
+    //mapに存在しているか(未使用)
     public boolean containsDB(Location location) {
         if (map.containsKey(makeString(location))) {
             return true;
@@ -191,9 +157,10 @@ public class DataBase {
         return false;
     }
 
-    //debug用
+    //debug用 mysqlの中身、登録情報のクリア
     public void resetDB() {
         map = new HashMap<>();
+        blockMap = new ArrayList<>();
         mysql.execute("delete from db.framelockdata");
     }
 
@@ -230,9 +197,7 @@ public class DataBase {
 
     //保護だけの場所の保護を消します
     public void refresh() {
-        for (String loc : map.keySet()) {
-            //どうすんだろこれ…
-        }
+            //どうすんだろこれ…未実装
     }
 
     //額縁のlocationを送ることでその背後に存在しているブロックのlocationを返す
@@ -262,9 +227,10 @@ public class DataBase {
         return new Location(location.getWorld(),x,y,z);
     }
 
-    public void list() {
+    //listを表示
+    public void list(CommandSender sender) {
         for (String string : blockMap) {
-            Bukkit.broadcast(Component.text(string));
+            sender.sendMessage(string);
         }
     }
 }
