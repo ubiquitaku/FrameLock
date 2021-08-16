@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
@@ -123,6 +124,12 @@ public final class FrameLock extends JavaPlugin implements Listener {
         db.add(e.getEntity().getLocation(),e.getPlayer().getUniqueId());
         db.addBlock(db.blockVector(e.getEntity().getLocation()));
         e.getPlayer().sendMessage(prefix+"額縁をロックしました");
+    }
+
+    //ピストンを使用不能に
+    @EventHandler
+    public void piston(BlockPistonExtendEvent e) {
+        e.setCancelled(true);
     }
 
     //クリック対策&弓矢対策
