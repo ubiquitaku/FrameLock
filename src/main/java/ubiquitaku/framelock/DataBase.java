@@ -2,6 +2,7 @@ package ubiquitaku.framelock;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ public class DataBase {
     //<StringLocation,name>
     Map<String, UUID> map;
     List<String> blockMap;
+    List<Material> dontPlace;
     MySQLManager mysql;
     int count;
     String tableName;
@@ -231,6 +233,12 @@ public class DataBase {
     public void list(CommandSender sender) {
         for (String string : blockMap) {
             sender.sendMessage(string);
+        }
+    }
+
+    public void dpList(CommandSender sender) {
+        for (Material material : dontPlace) {
+            sender.sendMessage(material.name());
         }
     }
 }

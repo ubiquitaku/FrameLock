@@ -1,6 +1,7 @@
 package ubiquitaku.framelock;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,6 +18,8 @@ import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public final class FrameLock extends JavaPlugin implements Listener {
     String prefix = "§l[FlameLock]§r";
@@ -48,7 +51,11 @@ public final class FrameLock extends JavaPlugin implements Listener {
                     sender.sendMessage("OP---------------------------------------");
                     sender.sendMessage("/flock reload : config.ymlをリロードします");
                     sender.sendMessage("/flock set <数字 > : 額縁の最大数を設定します");
-                    sender.sendMessage("flock save : おーとせーぶを無視して保存します");
+                    sender.sendMessage("/flock save : おーとせーぶを無視して保存します");
+                    sender.sendMessage("/flock dp : 貼り付けをキャンセルするブロックの一覧を表示します(バグってて見えません)");
+                    sender.sendMessage("/flock dp <add/remove> : 貼り付けをキャンセルするブロックを追加、削除します");
+                    sender.sendMessage("※メインハンドに持っているアイテム");
+                    sender.sendMessage("/flock reload : 設定ファイルを再読み込みします");
                     sender.sendMessage("OP---------------------------------------");
                 }
                 sender.sendMessage(prefix+"======================================");
@@ -78,6 +85,38 @@ public final class FrameLock extends JavaPlugin implements Listener {
                 db.count = Integer.parseInt(args[1]);
                 sender.sendMessage(prefix+"最大設置数を"+args[1]+"に設定しました");
             }
+            if (args[0].equals("dp")) {
+                if (args.length == 1) {
+                    sender.sendMessage(prefix+"-----------------------------------");
+                    db.dpList(sender);
+                    sender.sendMessage(prefix+"-----------------------------------");
+                    return true;
+                }
+                if (args[1].equals("add")) {
+                    Player p = (Player) sender;
+                    if (db.dontPlace.contains(p.getInventory().getItemInMainHand().getType())) {
+                        sender.sendMessage(prefix+"既に追加されています");
+                        return true;
+                    }
+                    db.dontPlace.add(p.getInventory().getItemInMainHand().getType());
+                    sender.sendMessage(prefix+p.getInventory().getItemInMainHand().getType().name()+"を追加しました");
+                    config.set("dontPlace",db.dontPlace);
+                    saveConfig();
+                    return true;
+                }
+                if (args[1].equals("remove")) {
+                    Player p = (Player) sender;
+                    if (!db.dontPlace.contains(p.getInventory().getItemInMainHand().getType())) {
+                        sender.sendMessage(prefix+"登録されていないアイテムです");
+                        return true;
+                    }
+                    db.dontPlace.remove(p.getInventory().getItemInMainHand().getType());
+                    sender.sendMessage(prefix+p.getInventory().getItemInMainHand().getType().name()+"を削除しました");
+                    config.set("dontPlace",db.dontPlace);
+                    saveConfig();
+                    return true;
+                }
+            }
             //debug用
             if (args[0].equals("reset")) {
                 db.resetDB();
@@ -103,7 +142,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
 
     @EventHandler
     public void placeFrame(HangingPlaceEvent e) {
-        //額縁が置かれたらロックする&上限数超えてたらキャンセル
+        //額縁が置かれたらロックする&上限数超えてたらキャンセル,設置をキャンセルするリストに入ってるのもキャンセル
         if (!entityCheck(e.getEntity().getType())) {
             return;
         }
@@ -119,6 +158,17 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (db.containsBlock(db.blockVector(e.getEntity().getLocation()))) {
             e.setCancelled(true);
             e.getPlayer().sendMessage(prefix+"既に保護された額縁が設置されているブロックには額縁を設置できません");
+            return;
+        }
+        if (db.dontPlace.contains(e.getBlock().getType())) {
+            if (e.getPlayer().isOp()) {
+                db.add(e.getEntity().getLocation(),e.getPlayer().getUniqueId());
+                db.addBlock(db.blockVector(e.getEntity().getLocation()));
+                e.getPlayer().sendMessage(prefix+"権限を使っておけないところに置いてます");
+                return;
+            }
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(prefix+"そのブロックには設置できません");
             return;
         }
         db.add(e.getEntity().getLocation(),e.getPlayer().getUniqueId());
@@ -179,11 +229,12 @@ public final class FrameLock extends JavaPlugin implements Listener {
         }
     }
 
-    //設定ファイル再読み込み
+    //設定ファイル読み込み
     public void load() {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max);
+        db.dontPlace = (List<Material>) config.getList("dontPlace");
     }
 
     //額縁系エンティティならtrue

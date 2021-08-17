@@ -5,3 +5,5 @@ mysql:
   port:
   db:
 max: 5
+dontPlace:
+  -
