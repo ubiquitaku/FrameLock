@@ -3,6 +3,7 @@ package ubiquitaku.framelock;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -198,8 +199,8 @@ public class DataBase {
     }
 
     //保護だけの場所の保護を消します
-    public void refresh() {
-            //どうすんだろこれ…未実装
+    public void refresh(Player player) {
+        //どうすんだろこれ…未実装
     }
 
     //額縁のlocationを送ることでその背後に存在しているブロックのlocationを返す
@@ -236,10 +237,46 @@ public class DataBase {
         }
     }
 
+    //置いたらまずいブロックのリスト…?
     public void dpList(CommandSender sender) {
         for (Material material : dontPlace) {
             sender.sendMessage(material.name());
         }
+    }
+
+    //ブロックにくっついていると想定されるあらゆる額縁が存在するか検索します
+//    public boolean searchFrame(Location loc) {
+//        World world = loc.getWorld();
+//        int x = loc.getBlockX(),y = loc.getBlockY(),z = loc.getBlockZ();
+//        List<String> locs = new ArrayList<>();
+//        locs.add(makeString(createLocation(world,x+1,y,z,-90,0)));
+//        locs.add(makeString(createLocation(world,x-1,y,z,90,0)));
+//        locs.add(makeString(createLocation(world,x,y,z+1,0,0)));
+//        locs.add(makeString(createLocation(world,x,y,z-1,180,0)));
+//
+//        locs.add(makeString(createLocation(world,x+1,y,z,-90,-90)));
+//        locs.add(makeString(createLocation(world,x-1,y,z,90,-90)));
+//        locs.add(makeString(createLocation(world,x,y,z+1,0,-90)));
+//        locs.add(makeString(createLocation(world,x,y,z-1,180,-90)));
+//
+//        locs.add(makeString(createLocation(world,x+1,y,z,-90,90)));
+//        locs.add(makeString(createLocation(world,x-1,y,z,90,90)));
+//        locs.add(makeString(createLocation(world,x,y,z+1,0,90)));
+//        locs.add(makeString(createLocation(world,x,y,z-1,180,90)));
+//
+//        for (String location : locs) {
+//            if (map.containsKey(location)) {
+//                blockMap.remove(makeBlockString(loc));
+//                map.remove(location);
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+
+    //location作成
+    public Location createLocation(World world,int x,int y,int z,int yaw,int pitch) {
+        return new Location(world,x,y,z,yaw,pitch);
     }
 }
 

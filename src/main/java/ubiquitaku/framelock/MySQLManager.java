@@ -190,7 +190,6 @@ public class MySQLManager {
 
 
     public void close(){
-
         try {
             this.st.close();
             this.con.close();

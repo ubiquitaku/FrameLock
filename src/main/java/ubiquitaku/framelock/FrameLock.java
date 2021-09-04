@@ -9,6 +9,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
@@ -46,7 +47,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (command.getName().equals("flock")) {
             if (args.length == 0) {
                 sender.sendMessage(prefix+"======================================");
-                sender.sendMessage("/flock refresh : 何らかの原因により保護を貫通して破壊された額縁がある場合その保護を削除します(作ろうと思ったけど無理でした)");
+//                sender.sendMessage("/flock refresh : 何らかの原因により保護を貫通して破壊された額縁がある場合その保護を削除します(作ろうと思ったけど無理でした)");
                 if (sender.isOp()) {
                     sender.sendMessage("OP---------------------------------------");
                     sender.sendMessage("/flock reload : config.ymlをリロードします");
@@ -55,14 +56,13 @@ public final class FrameLock extends JavaPlugin implements Listener {
                     sender.sendMessage("/flock dp : 貼り付けをキャンセルするブロックの一覧を表示します(バグってて見えません)");
                     sender.sendMessage("/flock dp <add/remove> : 貼り付けをキャンセルするブロックを追加、削除します");
                     sender.sendMessage("※メインハンドに持っているアイテム");
-                    sender.sendMessage("/flock reload : 設定ファイルを再読み込みします");
                     sender.sendMessage("OP---------------------------------------");
                 }
                 sender.sendMessage(prefix+"======================================");
                 return true;
             }
             if (args[0].equals("refresh")) {
-                db.refresh();
+//                db.refresh((Player) sender);
             }
             if (!sender.hasPermission("flock.op")) {
                 return true;
@@ -140,7 +140,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         return true;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void placeFrame(HangingPlaceEvent e) {
         //額縁が置かれたらロックする&上限数超えてたらキャンセル,設置をキャンセルするリストに入ってるのもキャンセル
         if (!entityCheck(e.getEntity().getType())) {
@@ -156,6 +156,12 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return;
         }
         if (db.containsBlock(db.blockVector(e.getEntity().getLocation()))) {
+            if (e.getPlayer().isOp()) {
+                e.getPlayer().sendMessage(prefix+"権限を使って保護がかかっているブロックに額縁を置きます");
+                e.getPlayer().sendMessage(prefix+"この機能は額縁が何らかの理由で消滅し");
+                e.getPlayer().sendMessage(prefix+"§c§lこの額縁は保護されません");
+                return;
+            }
             e.setCancelled(true);
             e.getPlayer().sendMessage(prefix+"既に保護された額縁が設置されているブロックには額縁を設置できません");
             return;
