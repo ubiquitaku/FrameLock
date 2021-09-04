@@ -158,7 +158,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         if (db.containsBlock(db.blockVector(e.getEntity().getLocation()))) {
             if (e.getPlayer().isOp()) {
                 e.getPlayer().sendMessage(prefix+"権限を使って保護がかかっているブロックに額縁を置きます");
-                e.getPlayer().sendMessage(prefix+"この機能は額縁が何らかの理由で消滅し");
+                e.getPlayer().sendMessage(prefix+"この機能は額縁が何らかの理由で消滅した場合その額縁が存在した場所に貼り付けてはがすと保護の削除ができます");
                 e.getPlayer().sendMessage(prefix+"§c§lこの額縁は保護されません");
                 return;
             }
