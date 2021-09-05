@@ -1,5 +1,6 @@
 package ubiquitaku.framelock;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -244,7 +245,11 @@ public final class FrameLock extends JavaPlugin implements Listener {
         config = getConfig();
         max = config.getInt("max");
         db = new DataBase(this,max, (List<String>) config.getList("dontPlace"));
-        db.dontPlace = (List<Material>) config.getList("dontPlace");
+        List<Material> list = new ArrayList<>();
+        for (String str : (List<String>) config.getList("dontPlace")) {
+            list.add(Material.getMaterial(str));
+        }
+        db.dontPlace = list;
     }
 
     //額縁系エンティティならtrue
@@ -260,7 +265,9 @@ public final class FrameLock extends JavaPlugin implements Listener {
         List<String> list = new ArrayList<>();
         for (Material mat : db.dontPlace) {
             list.add(mat.name());
+            Bukkit.broadcast(Component.text(mat.name()));
         }
         config.set("dontPlace",list);
+        saveConfig();
     }
 }
