@@ -6,4 +6,6 @@ mysql:
   db:
 max: 5
 dontPlace:
-  - sand
+  - SAND
+  - GRAVEL
+  - ANVIL

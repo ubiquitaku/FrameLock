@@ -103,10 +103,10 @@ public final class FrameLock extends JavaPlugin implements Listener {
                         sender.sendMessage(prefix+"既に追加されています");
                         return true;
                     }
-                    db.dontPlace.add(p.getInventory().getItemInMainHand().getType());
+                    db.dpAdd(p.getInventory().getItemInMainHand().getType());
                     sender.sendMessage(prefix+p.getInventory().getItemInMainHand().getType().name()+"を追加しました");
-                    matStr();
-                    saveConfig();
+//                    matStr();
+                    db.dpSave();
                     return true;
                 }
                 if (args[1].equals("remove")) {
@@ -115,10 +115,9 @@ public final class FrameLock extends JavaPlugin implements Listener {
                         sender.sendMessage(prefix+"登録されていないアイテムです");
                         return true;
                     }
-                    db.dontPlace.remove(p.getInventory().getItemInMainHand().getType());
+                    db.dpRemove(p.getInventory().getItemInMainHand().getType());
                     sender.sendMessage(prefix+p.getInventory().getItemInMainHand().getType().name()+"を削除しました");
                     matStr();
-                    saveConfig();
                     return true;
                 }
             }
@@ -260,7 +259,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
         return false;
     }
 
-    //List<Material>をList<String>(保存)に
+    //List<Material>をList<String>(保存)にしてsave
     public void matStr() {
         List<String> list = new ArrayList<>();
         for (Material mat : db.dontPlace) {

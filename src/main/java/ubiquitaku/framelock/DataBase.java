@@ -251,39 +251,21 @@ public class DataBase {
         }
     }
 
-    //ブロックにくっついていると想定されるあらゆる額縁が存在するか検索します
-//    public boolean searchFrame(Location loc) {
-//        World world = loc.getWorld();
-//        int x = loc.getBlockX(),y = loc.getBlockY(),z = loc.getBlockZ();
-//        List<String> locs = new ArrayList<>();
-//        locs.add(makeString(createLocation(world,x+1,y,z,-90,0)));
-//        locs.add(makeString(createLocation(world,x-1,y,z,90,0)));
-//        locs.add(makeString(createLocation(world,x,y,z+1,0,0)));
-//        locs.add(makeString(createLocation(world,x,y,z-1,180,0)));
-//
-//        locs.add(makeString(createLocation(world,x+1,y,z,-90,-90)));
-//        locs.add(makeString(createLocation(world,x-1,y,z,90,-90)));
-//        locs.add(makeString(createLocation(world,x,y,z+1,0,-90)));
-//        locs.add(makeString(createLocation(world,x,y,z-1,180,-90)));
-//
-//        locs.add(makeString(createLocation(world,x+1,y,z,-90,90)));
-//        locs.add(makeString(createLocation(world,x-1,y,z,90,90)));
-//        locs.add(makeString(createLocation(world,x,y,z+1,0,90)));
-//        locs.add(makeString(createLocation(world,x,y,z-1,180,90)));
-//
-//        for (String location : locs) {
-//            if (map.containsKey(location)) {
-//                blockMap.remove(makeBlockString(loc));
-//                map.remove(location);
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+    public void dpAdd(Material material) {
+        dontPlace.add(material);
+    }
 
-    //location作成
-//    public Location createLocation(World world,int x,int y,int z,int yaw,int pitch) {
-//        return new Location(world,x,y,z,yaw,pitch);
-//    }
+    public void dpRemove(Material material) {
+        dontPlace.remove(material);
+    }
+
+    public void dpSave() {
+        List<String> list = new ArrayList<>();
+        for (Material mat : dontPlace) {
+            list.add(mat.name());
+        }
+        pl.getConfig().set("dontPlace",list);
+        pl.saveConfig();
+    }
 }
 
