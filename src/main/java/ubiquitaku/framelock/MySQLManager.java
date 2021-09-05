@@ -199,9 +199,4 @@ public class MySQLManager {
         }
 
     }
-
-    //再接続
-    public void reConnect() {
-        this.connected = Connect(HOST, DB, USER, PASS,PORT);
-    }
 }

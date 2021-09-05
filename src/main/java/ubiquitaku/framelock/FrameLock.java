@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class FrameLock extends JavaPlugin implements Listener {
@@ -85,6 +86,9 @@ public final class FrameLock extends JavaPlugin implements Listener {
                 db.count = Integer.parseInt(args[1]);
                 sender.sendMessage(prefix+"最大設置数を"+args[1]+"に設定しました");
             }
+            if (args[0].equals("save")) {
+                db.runAutoSave();
+            }
             if (args[0].equals("dp")) {
                 if (args.length == 1) {
                     sender.sendMessage(prefix+"-----------------------------------");
@@ -100,7 +104,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
                     }
                     db.dontPlace.add(p.getInventory().getItemInMainHand().getType());
                     sender.sendMessage(prefix+p.getInventory().getItemInMainHand().getType().name()+"を追加しました");
-                    config.set("dontPlace",db.dontPlace);
+                    matStr();
                     saveConfig();
                     return true;
                 }
@@ -112,7 +116,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
                     }
                     db.dontPlace.remove(p.getInventory().getItemInMainHand().getType());
                     sender.sendMessage(prefix+p.getInventory().getItemInMainHand().getType().name()+"を削除しました");
-                    config.set("dontPlace",db.dontPlace);
+                    matStr();
                     saveConfig();
                     return true;
                 }
@@ -239,7 +243,7 @@ public final class FrameLock extends JavaPlugin implements Listener {
     public void load() {
         config = getConfig();
         max = config.getInt("max");
-        db = new DataBase(this,max);
+        db = new DataBase(this,max, (List<String>) config.getList("dontPlace"));
         db.dontPlace = (List<Material>) config.getList("dontPlace");
     }
 
@@ -249,5 +253,14 @@ public final class FrameLock extends JavaPlugin implements Listener {
             return true;
         }
         return false;
+    }
+
+    //List<Material>をList<String>(保存)に
+    public void matStr() {
+        List<String> list = new ArrayList<>();
+        for (Material mat : db.dontPlace) {
+            list.add(mat.name());
+        }
+        config.set("dontPlace",list);
     }
 }

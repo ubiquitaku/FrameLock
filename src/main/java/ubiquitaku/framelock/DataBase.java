@@ -3,7 +3,6 @@ package ubiquitaku.framelock;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -27,12 +26,18 @@ public class DataBase {
     int period = 10; // n秒ごとに保存します
     BukkitTask task;
 
-    public DataBase(JavaPlugin plugin,int max) {
+    public DataBase(JavaPlugin plugin,int max,List<String> list) {
         //table作るとか色々
         pl = plugin;
         tableName = "framelockdata";
         this.count = max;
         mysql = new MySQLManager(plugin,plugin.getName());
+        dontPlace = new ArrayList<>();
+        if (list.size() != 0) {
+            for (String str : list) {
+                dontPlace.add(Material.getMaterial(str));
+            }
+        }
         createTable();
         loadMap();
         runAutoSave();
@@ -50,8 +55,10 @@ public class DataBase {
         task = Bukkit.getScheduler().runTaskTimer(pl, () -> {
             mysql.execute("delete from db.framelockdata;");
             map.forEach(((loc, uuid) -> mysql.execute("insert into framelockdata (loc,uuid) values ('"+loc+"','"+uuid+"');")));
+
         }, period * 20L, period * 20L);
     }
+
     // キャンセルします
     public void cancelAutoSave() {
         if (task == null || task.isCancelled()) return;
@@ -275,8 +282,8 @@ public class DataBase {
 //    }
 
     //location作成
-    public Location createLocation(World world,int x,int y,int z,int yaw,int pitch) {
-        return new Location(world,x,y,z,yaw,pitch);
-    }
+//    public Location createLocation(World world,int x,int y,int z,int yaw,int pitch) {
+//        return new Location(world,x,y,z,yaw,pitch);
+//    }
 }
 
